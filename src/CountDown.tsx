@@ -2,16 +2,16 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CountDownProps } from './types';
 
-const DEFAULT_DIGIT_STYLE = { backgroundColor: '#FAB913' };
+const DEFAULT_DIGIT_STYLE = { backgroundColor: '#00f7ff' };
 const DEFAULT_DIGIT_TXT_STYLE = { color: '#000' };
 const DEFAULT_TIME_LABEL_STYLE = { color: '#000' };
 const DEFAULT_SEPARATOR_STYLE = { color: '#000' };
 const DEFAULT_TIME_TO_SHOW = ['D', 'H', 'M', 'S'];
 const DEFAULT_TIME_LABELS = {
-  d: 'Days',
-  h: 'Hours',
-  m: 'Minutes',
-  s: 'Seconds',
+  d: 'D',
+  h: 'H',
+  m: 'M',
+  s: 'S',
 };
 
 const formatTime = (days: number, hours: number, minutes: number, seconds: number): string => {
@@ -25,6 +25,7 @@ const CountDown: React.FC<CountDownProps> = ({
   separatorStyle = DEFAULT_SEPARATOR_STYLE,
   timeToShow = DEFAULT_TIME_TO_SHOW,
   showSeparator = false,
+  showLabels = false,
   size = 15,
   until,
   onChange,
@@ -41,6 +42,19 @@ const CountDown: React.FC<CountDownProps> = ({
   const isMountedRef = useRef(true);
   const lastUpdateTimeRef = useRef(Date.now());
 
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMountedRef.current) {
+      setRemainingTime(Math.max(until, 0));
+    }
+  }, [until]);
+
   const handleAppStateChange = useCallback(
     (nextAppState: AppStateStatus) => {
       if (!isMountedRef.current) return;
@@ -55,6 +69,13 @@ const CountDown: React.FC<CountDownProps> = ({
     },
     [remainingTime, running, wentBackgroundAt],
   );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [handleAppStateChange]);
 
   const handleTimerTick = useCallback(() => {
     if (!isMountedRef.current) return;
@@ -82,26 +103,6 @@ const CountDown: React.FC<CountDownProps> = ({
       });
     }
   }, [autoRestart, until, onChange, onFinish]);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isMountedRef.current) {
-      setRemainingTime(Math.max(until, 0));
-    }
-  }, [until]);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => {
-      subscription.remove();
-    };
-  }, [handleAppStateChange]);
 
   useEffect(() => {
     if (!running) {
@@ -138,7 +139,7 @@ const CountDown: React.FC<CountDownProps> = ({
   );
 
   const renderLabel = (label: string) => {
-    if (!label) return null;
+    if (!label || !showLabels) return null;
     return <Text style={[styles.timeTxt, { fontSize: size / 1.8 }, timeLabelStyle]}>{label}</Text>;
   };
 
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   digitCont: {
-    borderRadius: 5,
+    borderRadius: 10,
     marginHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',

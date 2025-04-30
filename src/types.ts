@@ -6,6 +6,7 @@ export interface CountDownProps {
     separatorStyle?: object;
     timeToShow?: string[];
     showSeparator?: boolean;
+    showLabels?: boolean;
     size?: number;
     until: number;
     autoRestart?: boolean;
