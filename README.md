@@ -2,13 +2,13 @@
 
 A customizable countdown component for React Native applications. This component provides a flexible and customizable countdown timer with support for days, hours, minutes, and seconds.
 
-<!-- ## Preview
+## Preview
 
 ### Basic Countdown
-![Basic Countdown Example](https://example.com/basic-countdown.gif)
+![Basic Countdown Example](./assets/example1.gif)
 
 ### Custom Styled Countdown
-![Custom Countdown Example](https://example.com/custom-countdown.gif) -->
+![Custom Countdown Example](./assets/example2.gif)
 
 ## Features
 
