@@ -1,0 +1,40 @@
+{
+  "name": "react-native-countdown-eggmun",
+  "version": "1.0.1",
+  "description": "A customizable countdown component for React Native",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "release": "npm run build && npm version patch && npm publish && git push && git push --tags",
+    "release:test": "npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "countdown",
+    "timer",
+    "typescript",
+    "react-native-countdown",
+    "react-native-timer",
+    "react-native-countdown-timer"
+  ],
+  "author": "eggmun98",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eggmun98/react-native-countdown-eggmun.git"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.14",
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

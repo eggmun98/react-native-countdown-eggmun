@@ -1,0 +1,47 @@
+# Node modules
+node_modules/
+
+# Build directory
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+
+# Test coverage
+coverage/
+
+# IDE/Editor directories
+.vscode/
+.idea/
+
+# Cache
+.cache
+
+# React Native
+*.iml
+*.jks
+.gradle/
+build/
+debug.keystore
+
+# Expo
+.expo/
+web-build/
+
+# Typescript
+*.tsbuildinfo
+
+# yarn
+yarn.lock
+
+# npm
+package-lock.json
