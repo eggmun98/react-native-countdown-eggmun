@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CountDownProps } from './types';
-
-
 
 const DEFAULT_DIGIT_STYLE = { backgroundColor: '#FAB913' };
 const DEFAULT_DIGIT_TXT_STYLE = { color: '#000' };
@@ -39,20 +37,14 @@ const CountDown: React.FC<CountDownProps> = ({
 }) => {
   const [remainingTime, setRemainingTime] = useState(Math.max(until, 0));
   const [wentBackgroundAt, setWentBackgroundAt] = useState<number | null>(null);
-
-
-
-  const getTimeLeft = useCallback(() => {
-    return {
-      seconds: remainingTime % 60,
-      minutes: Math.floor(remainingTime / 60) % 60,
-      hours: Math.floor(remainingTime / (60 * 60)) % 24,
-      days: Math.floor(remainingTime / (60 * 60 * 24)),
-    };
-  }, [remainingTime]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+  const lastUpdateTimeRef = useRef(Date.now());
 
   const handleAppStateChange = useCallback(
     (nextAppState: AppStateStatus) => {
+      if (!isMountedRef.current) return;
+
       if (nextAppState === 'active' && wentBackgroundAt && running) {
         const diff = (Date.now() - wentBackgroundAt) / 1000.0;
         setRemainingTime(Math.max(0, remainingTime - diff));
@@ -64,8 +56,44 @@ const CountDown: React.FC<CountDownProps> = ({
     [remainingTime, running, wentBackgroundAt],
   );
 
+  const handleTimerTick = useCallback(() => {
+    if (!isMountedRef.current) return;
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+
+    if (timeSinceLastUpdate >= 1000) {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 0) {
+          if (autoRestart) {
+            return until;
+          }
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          onFinish?.();
+          return 0;
+        }
+        const newTime = prevTime - 1;
+        onChange?.(newTime);
+        lastUpdateTimeRef.current = now;
+        return newTime;
+      });
+    }
+  }, [autoRestart, until, onChange, onFinish]);
+
   useEffect(() => {
-    setRemainingTime(Math.max(until, 0));
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMountedRef.current) {
+      setRemainingTime(Math.max(until, 0));
+    }
   }, [until]);
 
   useEffect(() => {
@@ -76,26 +104,32 @@ const CountDown: React.FC<CountDownProps> = ({
   }, [handleAppStateChange]);
 
   useEffect(() => {
-    if (!running) return;
+    if (!running) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
 
-    const timer = setInterval(() => {
-      setRemainingTime((prevTime) => {
-        if (prevTime <= 0) {
-          onFinish?.();
-          if (autoRestart) {
-            return until;
-          }
-          clearInterval(timer);
-          return 0;
-        }
-        const newTime = prevTime - 1;
-        onChange?.(newTime);
-        return newTime;
-      });
-    }, 1000);
+    timerRef.current = setInterval(handleTimerTick, 1000);
 
-    return () => clearInterval(timer);
-  }, [running, autoRestart, until]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [running, handleTimerTick]);
+
+  const getTimeLeft = useCallback(() => {
+    return {
+      seconds: remainingTime % 60,
+      minutes: Math.floor(remainingTime / 60) % 60,
+      hours: Math.floor(remainingTime / (60 * 60)) % 24,
+      days: Math.floor(remainingTime / (60 * 60 * 24)),
+    };
+  }, [remainingTime]);
 
   const renderDigit = (digit: string) => (
     <View style={[styles.digitCont, { width: size * 2.3, height: size * 2.6 }, digitStyle]}>
