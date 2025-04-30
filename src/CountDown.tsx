@@ -33,11 +33,14 @@ const CountDown: React.FC<CountDownProps> = ({
   onPress,
   onFinish,
   running = true,
+  autoRestart = false,
   style,
   timeLabels = DEFAULT_TIME_LABELS,
 }) => {
   const [remainingTime, setRemainingTime] = useState(Math.max(until, 0));
   const [wentBackgroundAt, setWentBackgroundAt] = useState<number | null>(null);
+
+
 
   const getTimeLeft = useCallback(() => {
     return {
@@ -62,6 +65,10 @@ const CountDown: React.FC<CountDownProps> = ({
   );
 
   useEffect(() => {
+    setRemainingTime(Math.max(until, 0));
+  }, [until]);
+
+  useEffect(() => {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
       subscription.remove();
@@ -74,8 +81,11 @@ const CountDown: React.FC<CountDownProps> = ({
     const timer = setInterval(() => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 0) {
-          clearInterval(timer);
           onFinish?.();
+          if (autoRestart) {
+            return until;
+          }
+          clearInterval(timer);
           return 0;
         }
         const newTime = prevTime - 1;
@@ -85,7 +95,7 @@ const CountDown: React.FC<CountDownProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [running, onChange, onFinish]);
+  }, [running, autoRestart, until]);
 
   const renderDigit = (digit: string) => (
     <View style={[styles.digitCont, { width: size * 2.3, height: size * 2.6 }, digitStyle]}>

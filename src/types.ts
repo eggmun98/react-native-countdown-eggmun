@@ -8,6 +8,7 @@ export interface CountDownProps {
     showSeparator?: boolean;
     size?: number;
     until: number;
+    autoRestart?: boolean;
     onChange?: (until: number) => void;
     onPress?: () => void;
     onFinish?: () => void;
