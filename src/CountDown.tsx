@@ -60,8 +60,16 @@ const CountDown: React.FC<CountDownProps> = ({
       if (!isMountedRef.current) return;
 
       if (nextAppState === 'active' && wentBackgroundAt && running) {
-        const diff = (Date.now() - wentBackgroundAt) / 1000.0;
-        setRemainingTime(Math.max(0, remainingTime - diff));
+        const diff = Math.floor((Date.now() - wentBackgroundAt) / 1000.0);
+        const newTime = Math.max(0, remainingTime - diff);
+
+        // 시, 분, 초 계산
+        const hours = Math.floor(newTime / 3600);
+        const minutes = Math.floor((newTime % 3600) / 60);
+        const seconds = newTime % 60;
+
+        // 올바른 형식으로 시간 설정
+        setRemainingTime(hours * 3600 + minutes * 60 + seconds);
       }
       if (nextAppState === 'background') {
         setWentBackgroundAt(Date.now());
