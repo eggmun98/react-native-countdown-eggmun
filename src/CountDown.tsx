@@ -77,6 +77,12 @@ const CountDown: React.FC<CountDownProps> = ({
     };
   }, [handleAppStateChange]);
 
+  useEffect(() => {
+    if (remainingTime === 0 && running) {
+      onFinish?.();
+    }
+  }, [remainingTime, running]);
+
   const handleTimerTick = useCallback(() => {
     if (!isMountedRef.current) return;
 
@@ -93,7 +99,6 @@ const CountDown: React.FC<CountDownProps> = ({
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
-          onFinish?.();
           return 0;
         }
         const newTime = prevTime - 1;
@@ -102,7 +107,7 @@ const CountDown: React.FC<CountDownProps> = ({
         return newTime;
       });
     }
-  }, [autoRestart, until, onChange, onFinish]);
+  }, [autoRestart, until]);
 
   useEffect(() => {
     if (!running) {
